@@ -1,14 +1,20 @@
 import numpy as np
 import pandas as pd
 
+keys = ['age', 'workclass', 'fnlwgt', 'education', 'education-num',
+       'marital-status', 'occupation', 'relationship', 'sex', 'capital-gain',
+       'capital-loss', 'hours-per-week', 'native-country']
+
+non_continuous_keys = ['workclass', 'education', 'marital-status', 'occupation', 
+                       'relationship', 'sex', 'native-country']
+
 def load_data(sett, n_fold=20, start_fold=0, missing_value='drop'):
     file_name = "../{}.csv".format(sett)
     data_whole = pd.read_csv(file_name, keep_default_na=True)
     data_whole = data_whole.replace(' ?', np.nan)
-    
     if missing_value == 'drop':
         data_whole = data_whole.dropna(how='any')
-    
+
     if sett == "train":
         train_index = []
         valid_index = []
@@ -28,3 +34,6 @@ def load_data(sett, n_fold=20, start_fold=0, missing_value='drop'):
         return train_data, train_label, valid_data, valid_label
     else:
         return data_whole
+
+test_data = load_data("test")
+train_data, train_label, valid_data, valid_label = load_data("train")
