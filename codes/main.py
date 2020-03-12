@@ -26,7 +26,7 @@ def output(pred, file):
     with open(file_path, 'w+') as f:
         f.write('{},{}\n'.format("id", "prediction"))
         for i in range(len(pred)):
-            f.write('{},{}\n'.format(i+1, pred[i]))
+            f.write('{},{}\n'.format(i+1, int(pred[i])))
 
 def main():
     train_data, train_label, valid_data, valid_label = load_data("train")
@@ -60,8 +60,8 @@ def main():
         print("[multi-layer perceptron]acc on train: ", acc_on_train)
         print("[multi-layer perceptron]acc on valid: ", acc_on_valid)
         print('--'*50)
-
-        models.append(clf)
+        if acc_on_valid > 75:
+            models.append(clf)
 
     def svm_model():
         from sklearn.svm import SVC
@@ -89,9 +89,11 @@ def main():
 
         models.append(clf)
     
-    
+    # define models
     lr_model()
-    # mlp_model()
+    mlp_model()
+    mlp_model()
+    mlp_model()
     svm_model()
     random_forest_model()
 
