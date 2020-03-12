@@ -67,7 +67,6 @@ def one_hot(data, sett):
 
         new_labels = list(label_encoder.classes_)
         features = pd.DataFrame(feature_arr, columns=new_labels)
-        print(features.shape)
         one_hot_components.append(features) 
     if sett == "train":
         ret = pd.concat([*one_hot_components, res, label], axis=1)
@@ -75,17 +74,21 @@ def one_hot(data, sett):
         ret = pd.concat([*one_hot_components, res], axis=1)
     return ret
 
-def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=True):
+def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=True, numpy=True):
     file_name = "../{}.csv".format(sett)
     data_whole = pd.read_csv(file_name, keep_default_na=True)
     data_whole = data_whole.replace(' ?', np.nan)
     
     if missing_value == 'drop':
         data_na_dropped = data_whole.dropna(how='any')
-        data_na_dropped = data_na_dropped.reset_index()
+        data = data_na_dropped.reset_index()
+    if missing_value == 'fill':
+        data = data_whole.fillna(method='ffill')
+
 
     if do_one_hot:
-        data_whole = one_hot(data_na_dropped, sett)
+        data_whole = one_hot(data, sett)
+
 
     if sett == "train":
         train_index = []
@@ -103,18 +106,31 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
 
         train_data, train_label = data_whole.iloc[train_index, :-1], data_whole.iloc[train_index ,-1:]
         valid_data, valid_label = data_whole.iloc[valid_index, :-1], data_whole.iloc[valid_index ,-1:]
-        return train_data, train_label, valid_data, valid_label
+        # print(test_data.head)
+        # exit(0)
+        if numpy:
+            return train_data.to_numpy(), train_label.to_numpy(), valid_data.to_numpy(), valid_label.to_numpy()
+        else:
+            return train_data, train_label, valid_data, valid_label
     else:
-        return data_whole
+        data_whole = data_whole.drop(columns=[' Holand-Netherlands', ' Never-worked'])
+        # print(data_whole.head())
+        if numpy:
+            return data_whole.to_numpy()
+        else:
+            return data_whole
 
-train_data, train_label, valid_data, valid_label = load_data("train")
-test_data = load_data("test")
+
+if __name__ == '__main__':
+    train_data, train_label, valid_data, valid_label = load_data("train", numpy=False)
+    test_data = load_data("test", missing_value='fill', numpy=False)
 
 
-# train_countries = set(np.unique(train_data.keys()))
-# test_countries = set(np.unique(test_data.keys()))
-# print(train_countries)
-# print(test_countries)
-# print("diff: ", test_countries - train_countries)
-# diff:  {' Holand-Netherlands'}
-# print(sum([len(val) for key, val in non_continuous_key_values.items()]))
+    train_countries = set(np.unique(train_data.keys()))
+    test_countries = set(np.unique(test_data.keys()))
+    print(train_countries)
+    print(test_countries)
+    print("diff: ", test_countries - train_countries)
+    print("diff: ", train_countries - test_countries)
+    # diff:  {' Holand-Netherlands'}
+    print(sum([len(val) for key, val in non_continuous_key_values.items()]))
