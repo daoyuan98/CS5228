@@ -38,7 +38,7 @@ def main():
     
     print('--'*50)
 
-    train_data, train_label, valid_data, valid_label = load_data("train", missing_value='fill')
+    train_data, train_label, valid_data, valid_label = load_data("train", missing_value='drop')
     test_data = load_data("test", missing_value='fill')
 
     train_label = train_label.reshape((train_label.shape[0], ))
@@ -107,10 +107,10 @@ def main():
     # mlp_model()
     # svm_model()
 
-    random_forest_model(14)
-    random_forest_model(14)
-    random_forest_model(14)
-    random_forest_model(14)
+    random_forest_model(12)
+    random_forest_model(12)
+    random_forest_model(12)
+    random_forest_model(12)
 
     valid_res = assemble_predict(models, valid_data)
     print("assemble acc on valid: ", get_acc(valid_res, valid_label))

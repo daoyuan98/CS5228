@@ -107,7 +107,8 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
             else:
                 train_index.append(i)
 
-        data_whole = data_whole.drop(columns=[' Never-worked'])
+        if missing_value == "fill":
+            data_whole = data_whole.drop(columns=[' Never-worked'])
 
         train_data, train_label = data_whole.iloc[train_index, :-1], data_whole.iloc[train_index ,-1:]
         valid_data, valid_label = data_whole.iloc[valid_index, :-1], data_whole.iloc[valid_index ,-1:]
