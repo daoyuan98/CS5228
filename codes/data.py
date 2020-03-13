@@ -80,11 +80,14 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
     data_whole = data_whole.replace(' ?', np.nan)
     
     if missing_value == 'drop':
+        print("drop missing value")
         data_na_dropped = data_whole.dropna(how='any')
         data = data_na_dropped.reset_index()
+    
     if missing_value == 'fill':
+        print("fill missing value")
         data = data_whole.fillna(method='ffill')
-
+        data = data.fillna(method='bfill')
 
     if do_one_hot:
         data_whole = one_hot(data, sett)
@@ -104,10 +107,11 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
             else:
                 train_index.append(i)
 
+        data_whole = data_whole.drop(columns=[' Never-worked'])
+
         train_data, train_label = data_whole.iloc[train_index, :-1], data_whole.iloc[train_index ,-1:]
         valid_data, valid_label = data_whole.iloc[valid_index, :-1], data_whole.iloc[valid_index ,-1:]
-        # print(test_data.head)
-        # exit(0)
+
         if numpy:
             return train_data.to_numpy(), train_label.to_numpy(), valid_data.to_numpy(), valid_label.to_numpy()
         else:
@@ -122,7 +126,7 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
 
 
 if __name__ == '__main__':
-    train_data, train_label, valid_data, valid_label = load_data("train", numpy=False)
+    train_data, train_label, valid_data, valid_label = load_data("train", missing_value='fill', numpy=False)
     test_data = load_data("test", missing_value='fill', numpy=False)
 
 

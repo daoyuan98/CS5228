@@ -4,14 +4,20 @@ from data import *
 from sklearn.linear_model import LogisticRegressionCV
 
 def assemble_predict(models, data, weights=None, threshold=0.5):
+
+    print(data.shape)
+
     if weights is None:
         weights = [1.] * len(models)
     pred = np.zeros((data.shape[0], ))
+
     for model in models:
         pred = pred + model.predict(data)
+
     pred = pred / sum(weights)
     res = np.zeros((data.shape[0], ))
-    res[pred > threshold] = 1
+    res[pred >= threshold] = 1
+
     return res
 
 
@@ -29,14 +35,17 @@ def output(pred, file):
             f.write('{},{}\n'.format(i+1, int(pred[i])))
 
 def main():
-    train_data, train_label, valid_data, valid_label = load_data("train")
+    
+    print('--'*50)
+
+    train_data, train_label, valid_data, valid_label = load_data("train", missing_value='fill')
     test_data = load_data("test", missing_value='fill')
 
     train_label = train_label.reshape((train_label.shape[0], ))
     valid_label = valid_label.reshape((valid_label.shape[0], ))
 
     np.random.seed(19)
-
+    print(train_data.shape)
     models = []
     
     def lr_model():
@@ -76,9 +85,9 @@ def main():
 
         models.append(clf)
 
-    def random_forest_model():
+    def random_forest_model(depth=14):
         from sklearn.ensemble import RandomForestClassifier
-        clf = RandomForestClassifier(max_depth=2, random_state=np.random.randint(1, 10000)).fit(train_data, train_label)
+        clf = RandomForestClassifier(max_depth=depth, random_state=np.random.randint(1, 10000)).fit(train_data, train_label)
 
         acc_on_train = clf.score(train_data, train_label)
         acc_on_valid = clf.score(valid_data, valid_label)
@@ -89,13 +98,19 @@ def main():
 
         models.append(clf)
     
+    print('--'*50)
+
     # define models
-    lr_model()
-    mlp_model()
-    mlp_model()
-    mlp_model()
-    svm_model()
-    random_forest_model()
+    # lr_model()
+    # mlp_model()
+    # mlp_model()
+    # mlp_model()
+    # svm_model()
+
+    random_forest_model(14)
+    random_forest_model(14)
+    random_forest_model(14)
+    random_forest_model(14)
 
     valid_res = assemble_predict(models, valid_data)
     print("assemble acc on valid: ", get_acc(valid_res, valid_label))
@@ -107,3 +122,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
