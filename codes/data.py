@@ -54,6 +54,7 @@ non_continuous_key_values = {
 def one_hot(data, sett):
     continuous_keys = keys - non_continuous_keys
     res = pd.DataFrame(data[continuous_keys])
+    # print(res)
     if sett == "train":
         label = pd.DataFrame(data['exceeds50K'])
 
@@ -69,16 +70,16 @@ def one_hot(data, sett):
         features = pd.DataFrame(feature_arr, columns=new_labels)
         one_hot_components.append(features) 
     if sett == "train":
-        ret = pd.concat([*one_hot_components, res, label], axis=1)
+        ret = pd.concat([res, *one_hot_components, label], axis=1)
     else:
-        ret = pd.concat([*one_hot_components, res], axis=1)
+        ret = pd.concat([res, *one_hot_components], axis=1)
     return ret
 
 def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=True, numpy=True):
     file_name = "../{}.csv".format(sett)
     data_whole = pd.read_csv(file_name, keep_default_na=True)
     data_whole = data_whole.replace(' ?', np.nan)
-    
+
     if missing_value == 'drop':
         print("drop missing value")
         data_na_dropped = data_whole.dropna(how='any')
@@ -89,9 +90,15 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
         data = data_whole.fillna(method='ffill')
         data = data.fillna(method='bfill')
 
-    if do_one_hot:
-        data_whole = one_hot(data, sett)
+    if missing_value == 'mean':
+        print('fill missing value with mean')
+        data = data_whole.fillna(data_whole.mean())
+        
+        data = data_whole.fillna(method='ffill')
+        data = data.fillna(method='bfill')
 
+    if do_one_hot:
+        data_whole =  pd.get_dummies(data)
 
     if sett == "train":
         train_index = []
@@ -107,18 +114,32 @@ def load_data(sett, n_fold=20, start_fold=19, missing_value='drop', do_one_hot=T
             else:
                 train_index.append(i)
 
-        if missing_value == "fill":
+        if missing_value == "fill" and ' Never-worked' in data_whole.keys():
             data_whole = data_whole.drop(columns=[' Never-worked'])
 
-        train_data, train_label = data_whole.iloc[train_index, :-1], data_whole.iloc[train_index ,-1:]
-        valid_data, valid_label = data_whole.iloc[valid_index, :-1], data_whole.iloc[valid_index ,-1:]
+        # train_data, train_label = data_whole.iloc[train_index, :-1], data_whole.iloc[train_index ,-1:]
+        # valid_data, valid_label = data_whole.iloc[valid_index, :-1], data_whole.iloc[valid_index ,-1:]
+
+        data = data_whole.drop(columns='exceeds50K')
+        label = data_whole['exceeds50K']
+
+        train_data = data.iloc[train_index, :]
+        train_label = label.iloc[train_index]
+
+        valid_data = data.iloc[valid_index, :]
+        valid_label = label.iloc[valid_index]
 
         if numpy:
             return train_data.to_numpy(), train_label.to_numpy(), valid_data.to_numpy(), valid_label.to_numpy()
         else:
             return train_data, train_label, valid_data, valid_label
     else:
-        data_whole = data_whole.drop(columns=[' Holand-Netherlands', ' Never-worked'])
+        if 'native-country_ Holand-Netherlands' in data_whole.keys():
+            print("drop ", 'native-country_ Holand-Netherlands')
+            data_whole = data_whole.drop(columns=['native-country_ Holand-Netherlands'])
+        # if 'workclass_ Never-worked' in data_whole.keys():
+        #     print('drop workclass')
+        #     data_whole = data_whole.drop(columns=['workclass_ Never-worked'])
         # print(data_whole.head())
         if numpy:
             return data_whole.to_numpy()
