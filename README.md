@@ -14,3 +14,16 @@ final project for CS5228
 | xgboost(n_estimator=220,  max_depth=3)                       | 87.59                           | 86.34                 | 05-06 |
 | xgboost(n_estimator=210,  max_depth=3) + xgboost(n_estimator=220,  max_depth=3) + xgboost(n_estimator=230,  max_depth=3) | 87.71                           | 86.34                 | 05-06 |
 
+
+
+model ablation
+
+| method              | f1 on valid |
+| ------------------- | ----------- |
+| KNN                 | 77.89       |
+| logistic regression | 79.61       |
+| MLP                 | 80.34       |
+| LDA                 | 84.15       |
+| adaboost_classifier | 84.64       |
+| SVM                 | - -         |
+
